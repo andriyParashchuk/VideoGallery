@@ -1,15 +1,18 @@
-/*
-* This file demonstrates a basic ReactXP app.
-*/
+import * as RX from 'reactxp'
 
-import RX = require('reactxp');
+import { HomeScreen } from './HomeScreen';
+import { PlaybackScreen } from './PlaybackScreen';
 
-import MainPanel = require('./MainPanel');
-import SecondPanel = require('./SecondPanel');
+interface Video {
+  id: number,
+  name: string,
+  previewImage: string,
+  videoUrl: string,
+}
 
 enum NavigationRouteId {
-    MainPanel,
-    SecondPanel
+    HomeScreen,
+    PlaybackScreen,
 }
 
 const styles = {
@@ -18,12 +21,24 @@ const styles = {
     })
 };
 
-class App extends RX.Component<{}, null> {
+interface AppState {
+  video: Video,
+}
+
+class App extends RX.Component<{}, AppState> {
     private _navigator: RX.Navigator;
+
+    constructor(props) {
+      super(props)
+
+      this.state = {
+        video: undefined,
+      }
+    }
 
     componentDidMount() {
         this._navigator.immediatelyResetRouteStack([{
-            routeId: NavigationRouteId.MainPanel,
+            routeId: NavigationRouteId.HomeScreen,
             sceneConfigType: RX.Types.NavigatorSceneConfigType.Fade
         }]);
     }
@@ -44,19 +59,20 @@ class App extends RX.Component<{}, null> {
 
     private _renderScene = (navigatorRoute: RX.Types.NavigatorRoute) => {
         switch (navigatorRoute.routeId) {
-            case NavigationRouteId.MainPanel:
-                return <MainPanel onPressNavigate={ this._onPressNavigate } />
+            case NavigationRouteId.HomeScreen:
+                return <HomeScreen onPressVideo={ this._onPressVideo } />
 
-            case NavigationRouteId.SecondPanel:
-                return <SecondPanel onNavigateBack={ this._onPressBack } />
+            case NavigationRouteId.PlaybackScreen:
+                return <PlaybackScreen onPressBack={ this._onPressBack } video={this.state.video} />
         }
 
         return null;
     }
 
-    private _onPressNavigate = () => {
+    private _onPressVideo = (video: Video) => {
+        this.setState({ video })
         this._navigator.push({
-            routeId: NavigationRouteId.SecondPanel,
+            routeId: NavigationRouteId.PlaybackScreen,
             sceneConfigType: RX.Types.NavigatorSceneConfigType.FloatFromRight,
             customSceneConfig: {
                 hideShadow: true
